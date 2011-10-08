@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Peter Gumeson"]
   s.email       = ["gumeson@gmail.com"]
   s.homepage    = "http://rubygems.org/gems/mongoid-metastamp"
-  s.summary     = %q{ Store and query for more information in your mongoid timestamps }
-  s.description = %q{ Provides enhanced meta-timestamps for mongoid that allow querying by day, month, year, or by universal or local timezone. }
+  s.summary     = %q{ Store and query more useful information about your Mongoid timestamps }
+  s.description = %q{ Provides enhanced meta-timestamps for mongoid that allow querying by day, month, year, min, sec, or by local vs. universal timezone. }
 
   s.rubyforge_project = "mongoid-metastamp"
 
