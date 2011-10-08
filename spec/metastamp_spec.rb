@@ -34,17 +34,17 @@ describe Mongoid::Metastamp do
           pst_event.timestamp.should == Time.parse(ten_am_pacific)
         end
 
-        it "should be searchable by timestamp.time_in_zone" do
+        it "should be searchable by timestamp.in_zone" do
           Event.where(
-            "timestamp.time_in_zone" => { '$gt' => Time.parse(ten_am_pacific) - 1.minute },
-            "timestamp.time_in_zone" => { '$lt' => Time.parse(ten_am_pacific) + 1.minute }
+            "timestamp.in_zone" => { '$gt' => Time.parse(ten_am_pacific) - 1.minute },
+            "timestamp.in_zone" => { '$lt' => Time.parse(ten_am_pacific) + 1.minute }
           ).should == [pst_event]
         end
 
-        it "should be searchable by timestamp.time_utc" do
+        it "should be searchable by timestamp.normalized" do
           Event.where(
-            "timestamp.time_normalized" => { '$gt' => Time.parse(ten_am_utc) - 1.minute },
-            "timestamp.time_normalized" => { '$lt' => Time.parse(ten_am_utc) + 1.minute }
+            "timestamp.normalized" => { '$gt' => Time.parse(ten_am_utc) - 1.minute },
+            "timestamp.normalized" => { '$lt' => Time.parse(ten_am_utc) + 1.minute }
           ).should == [pst_event]
         end
 

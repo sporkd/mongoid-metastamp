@@ -17,8 +17,8 @@ Storage
 =========================
 (What metadata should we store?)
 
-* time_in_zone (Date)
-* time_normalized (Date)
+* in_zone (Date)
+* normalized (Date)
 * year (Int)
 * month (Int)
 * day (Int)

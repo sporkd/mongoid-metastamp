@@ -8,21 +8,21 @@ module Mongoid #:nodoc:
 
       def deserialize(object)
         return nil if object.blank?
-        super(object[:time_in_zone])
+        super(object[:in_zone])
       end
 
       def serialize(object)
         time = super(object)
         normalized_time = normalize_time(object)
         { 
-          time_in_zone:     time,
-          time_normalized:  normalized_time,
-          year:             normalized_time.year,
-          month:            normalized_time.month,
-          day:              normalized_time.day,
-          hour:             normalized_time.hour,
-          min:              normalized_time.min,
-          sec:              normalized_time.sec
+          in_zone:      time,
+          normalized:   normalized_time,
+          year:         normalized_time.year,
+          month:        normalized_time.month,
+          day:          normalized_time.day,
+          hour:         normalized_time.hour,
+          min:          normalized_time.min,
+          sec:          normalized_time.sec
         }
       end
 
