@@ -6,31 +6,27 @@ module Mongoid #:nodoc:
       include Mongoid::Fields::Serializable
       include Mongoid::Fields::Serializable::Timekeeping
 
-      # def cast_on_read?; true; end
-
       def deserialize(object)
         return nil if object.blank?
-        super(object[:time])
+        super(object[:time_in_zone])
       end
 
       def serialize(object)
         time = super(object)
-        universal_time = normalize_time(object)
+        normalized_time = normalize_time(object)
         { 
-          time:             time,
-          year:             time.year,
-          month:            time.month,
-          day:              time.day,
-          hour:             time.hour,
-          min:              time.min,
-          sec:              time.sec,
-          universal_time:   universal_time,
-          universal_year:   universal_time.year,
-          universal_month:  universal_time.month,
-          universal_day:    universal_time.day,
-          universal_hour:   universal_time.hour
+          time_in_zone:     time,
+          time_normalized:  normalized_time,
+          year:             normalized_time.year,
+          month:            normalized_time.month,
+          day:              normalized_time.day,
+          hour:             normalized_time.hour,
+          min:              normalized_time.min,
+          sec:              normalized_time.sec
         }
       end
+
+    protected
 
       def normalize_time(object)
         case object
