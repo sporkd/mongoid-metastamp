@@ -1,1 +1,1 @@
-# encoding: utf-8require "mongoid"module Mongoid #:nodoc:  module Metastamp  endend
+# encoding: utf-8require "mongoid"require "mongoid/core_ext"module Mongoid #:nodoc:  module Metastamp  endend
