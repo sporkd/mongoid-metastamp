@@ -52,6 +52,14 @@ describe "Mongoid::Metastamp::Time storage" do
         eastern_event['timestamp']['sec'].should == 0
       end
 
+      it "should store timestamp.zone" do
+        eastern_event['timestamp']['zone'].should == "-04:00"
+      end
+
+      it "should store timestamp.offset" do
+        eastern_event['timestamp']['offset'].should == (- 14400)
+      end
+
     end
 
     describe "on deserialization" do
@@ -102,6 +110,14 @@ describe "Mongoid::Metastamp::Time storage" do
 
       it "should store timestamp.sec" do
         eastern_event['timestamp']['sec'].should == 0
+      end
+
+      it "should store timestamp.zone" do
+        eastern_event['timestamp']['zone'].should == "-04:00"
+      end
+
+      it "should store timestamp.offset" do
+        eastern_event['timestamp']['offset'].should == (- 14400)
       end
 
     end

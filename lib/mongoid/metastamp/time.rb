@@ -22,7 +22,9 @@ module Mongoid #:nodoc:
           day:          date_time.day,
           hour:         date_time.hour,
           min:          date_time.min,
-          sec:          date_time.sec
+          sec:          date_time.sec,
+          zone:         date_time.zone,
+          offset:       date_time.utc_offset
         }.stringify_keys
       end
 
