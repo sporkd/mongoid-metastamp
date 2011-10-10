@@ -12,6 +12,7 @@ module Mongoid #:nodoc:
       end
 
       def serialize(object)
+        return nil if object.blank?
         time = super(object)
         date_time = parse_datetime(object)
         { 

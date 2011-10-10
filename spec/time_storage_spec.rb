@@ -3,6 +3,58 @@
 require "spec_helper"
 
 describe "Mongoid::Metastamp::Time" do
+  
+  context "storing nil" do
+
+    context "on initialization" do
+
+      let :event do
+        Event.new(timestamp: nil)
+      end
+
+      describe "on serialization" do
+
+        it "should store timestamp as nil" do
+          event['timestamp'].should == nil
+        end
+
+      end
+
+      describe "on deserialization" do
+
+        it "timestamp should return nil" do
+          event.timestamp.should == nil
+        end
+
+      end
+
+    end
+
+    context "on creation" do
+
+      let :event do
+        Event.create(timestamp: nil).reload
+      end
+
+      describe "on serialization" do
+
+        it "should store timestamp as nil" do
+          event['timestamp'].should == nil
+        end
+
+      end
+
+      describe "on deserialization" do
+
+        it "timestamp should return nil" do
+          event.timestamp.should == nil
+        end
+
+      end
+
+    end
+
+  end
 
   [0, 12, 23].each do |hour|
 
