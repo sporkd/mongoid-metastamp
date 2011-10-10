@@ -22,31 +22,31 @@ describe "Mongoid::Metastamp::Time search" do
       Event.create(timestamp: ten_am_eastern)
     end
 
-    let :pst_event do
+    let :pacific_event do
       Event.create(timestamp: ten_am_pacific)
     end
 
-    describe "searching by timestamp.in_zone" do
+    describe "searching by timestamp.time" do
 
       it "using a 10 AM UTC range should not return any events" do
         Event.where(
-          "timestamp.in_zone" => { '$gt' => Time.parse(ten_am_utc) - 1.minute },
-          "timestamp.in_zone" => { '$lt' => Time.parse(ten_am_utc) + 1.minute }
+          "timestamp.time" => { '$gt' => Time.parse(ten_am_utc) - 1.minute },
+          "timestamp.time" => { '$lt' => Time.parse(ten_am_utc) + 1.minute }
         ).should == []
       end
 
-      it "using a 10 AM EST range should only return the EST event" do
+      it "using a 10 AM ET range should only return the ET event" do
         Event.where(
-          "timestamp.in_zone" => { '$gt' => Time.parse(ten_am_eastern) - 1.minute },
-          "timestamp.in_zone" => { '$lt' => Time.parse(ten_am_eastern) + 1.minute }
+          "timestamp.time" => { '$gt' => Time.parse(ten_am_eastern) - 1.minute },
+          "timestamp.time" => { '$lt' => Time.parse(ten_am_eastern) + 1.minute }
         ).should == [est_event]
       end
 
-      it "using a 10 AM PST range should only return the PST event" do
+      it "using a 10 AM PT range should only return the PT event" do
         Event.where(
-          "timestamp.in_zone" => { '$gt' => Time.parse(ten_am_pacific) - 1.minute },
-          "timestamp.in_zone" => { '$lt' => Time.parse(ten_am_pacific) + 1.minute }
-        ).should == [pst_event]
+          "timestamp.time" => { '$gt' => Time.parse(ten_am_pacific) - 1.minute },
+          "timestamp.time" => { '$lt' => Time.parse(ten_am_pacific) + 1.minute }
+        ).should == [pacific_event]
       end
 
     end
@@ -57,7 +57,7 @@ describe "Mongoid::Metastamp::Time search" do
         Event.where(
           "timestamp.normalized" => { '$gt' => Time.parse(ten_am_utc) - 1.minute },
           "timestamp.normalized" => { '$lt' => Time.parse(ten_am_utc) + 1.minute }
-        ).should == [est_event, pst_event]
+        ).should == [est_event, pacific_event]
       end
 
     end
