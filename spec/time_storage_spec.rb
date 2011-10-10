@@ -2,130 +2,149 @@
 
 require "spec_helper"
 
-describe "Mongoid::Metastamp::Time storage" do
+describe "Mongoid::Metastamp::Time" do
 
-  let :ten_am_utc do
-    "2011-10-05T10:00:00-00:00"
-  end
+  [0, 12, 23].each do |hour|
 
-  let :ten_am_eastern do
-    "2011-10-05T10:00:00-04:00"
-  end
+    ["+00:00", "-04:00", "-07:00", "+13:00"].each do |zone|
 
-  context "initialized with a timestamp of 10 AM ET" do
+      time_utc = Time.new(2011, 12, 31, hour, 0, 0, '-00:00')
+      time = Time.new(2011, 12, 31, hour, 0, 0, zone)
 
-    let :eastern_event do
-      Event.new(timestamp: ten_am_eastern)
-    end
+      context "storing time #{ time }" do
+        
+        {
+          "String"      => time.to_s,
+          "iso8601"     => time.iso8601,
+          "Time"        => time
+        }.each do |format, timestamp|
 
-    describe "on serialization" do
+          context "formatted as #{ format } (#{ timestamp })" do
 
-      it "should store timestamp.time" do
-        eastern_event['timestamp']['time'].should == Time.parse(ten_am_eastern)
-      end
+            context "on initialization" do
 
-      it "should store timestamp.normalized" do
-        eastern_event['timestamp']['normalized'].should == Time.parse(ten_am_utc)
-      end
+              let :event do
+                Event.new(timestamp: timestamp)
+              end
 
-      it "should store timestamp.year" do
-        eastern_event['timestamp']['year'].should == 2011
-      end
+              describe "on serialization" do
 
-      it "should store timestamp.month" do
-        eastern_event['timestamp']['month'].should == 10
-      end
+                it "should store timestamp.time" do
+                  event['timestamp']['time'].should == time
+                end
 
-      it "should store timestamp.day" do
-        eastern_event['timestamp']['day'].should == 5
-      end
+                it "should store timestamp.normalized" do
+                  event['timestamp']['normalized'].should == time_utc
+                end
 
-      it "should store timestamp.hour" do
-        eastern_event['timestamp']['hour'].should == 10
-      end
+                it "should store timestamp.year as 2011" do
+                  event['timestamp']['year'].should == 2011
+                end
 
-      it "should store timestamp.min" do
-        eastern_event['timestamp']['min'].should == 0
-      end
+                it "should store timestamp.month as 12" do
+                  event['timestamp']['month'].should == 12
+                end
 
-      it "should store timestamp.sec" do
-        eastern_event['timestamp']['sec'].should == 0
-      end
+                it "should store timestamp.day as 31" do
+                  event['timestamp']['day'].should == 31
+                end
 
-      it "should store timestamp.zone" do
-        eastern_event['timestamp']['zone'].should == "-04:00"
-      end
+                it "should store timestamp.hour as #{ hour }" do
+                  event['timestamp']['hour'].should == hour
+                end
 
-      it "should store timestamp.offset" do
-        eastern_event['timestamp']['offset'].should == (- 14400)
-      end
+                it "should store timestamp.min as 0" do
+                  event['timestamp']['min'].should == 0
+                end
 
-    end
+                it "should store timestamp.sec as 0" do
+                  event['timestamp']['sec'].should == 0
+                end
 
-    describe "on deserialization" do
+                it "should store timestamp.zone as #{ zone }" do
+                  event['timestamp']['zone'].should == zone
+                end
 
-      it "timestamp should return 10 AM ET" do
-        eastern_event.timestamp.should == Time.parse(ten_am_eastern)
-      end
+                it "should store timestamp.offset as #{ (zone.to_i * 60 * 60) }" do
+                  event['timestamp']['offset'].should == (zone.to_i * 60 * 60)
+                end
 
-    end
+              end
 
-  end
+              describe "on deserialization" do
 
-  context "created with a timestamp of 10 AM ET" do
+                it "timestamp should return #{ time }" do
+                  event.timestamp.should == time
+                end
 
-    let :eastern_event do
-      Event.create(timestamp: ten_am_eastern).reload
-    end
+              end
 
-    describe "on serialization" do
+            end
 
-      it "should store timestamp.time" do
-        eastern_event['timestamp']['time'].should == Time.parse(ten_am_eastern)
-      end
+            context "on creation" do
 
-      it "should store timestamp.normalized" do
-        eastern_event['timestamp']['normalized'].should == Time.parse(ten_am_utc)
-      end
+              let :event do
+                Event.create(timestamp: timestamp).reload
+              end
 
-      it "should store timestamp.year" do
-        eastern_event['timestamp']['year'].should == 2011
-      end
+              describe "on serialization" do
 
-      it "should store timestamp.month" do
-        eastern_event['timestamp']['month'].should == 10
-      end
+                it "should store timestamp.time" do
+                  event['timestamp']['time'].should == time
+                end
 
-      it "should store timestamp.day" do
-        eastern_event['timestamp']['day'].should == 5
-      end
+                it "should store timestamp.normalized" do
+                  event['timestamp']['normalized'].should == time_utc
+                end
 
-      it "should store timestamp.hour" do
-        eastern_event['timestamp']['hour'].should == 10
-      end
+                it "should store timestamp.year as 2011" do
+                  event['timestamp']['year'].should == 2011
+                end
 
-      it "should store timestamp.min" do
-        eastern_event['timestamp']['min'].should == 0
-      end
+                it "should store timestamp.month as 12" do
+                  event['timestamp']['month'].should == 12
+                end
 
-      it "should store timestamp.sec" do
-        eastern_event['timestamp']['sec'].should == 0
-      end
+                it "should store timestamp.day as 31" do
+                  event['timestamp']['day'].should == 31
+                end
 
-      it "should store timestamp.zone" do
-        eastern_event['timestamp']['zone'].should == "-04:00"
-      end
+                it "should store timestamp.hour as #{ hour }" do
+                  event['timestamp']['hour'].should == hour
+                end
 
-      it "should store timestamp.offset" do
-        eastern_event['timestamp']['offset'].should == (- 14400)
-      end
+                it "should store timestamp.min as 0" do
+                  event['timestamp']['min'].should == 0
+                end
 
-    end
+                it "should store timestamp.sec as 0" do
+                  event['timestamp']['sec'].should == 0
+                end
 
-    describe "on deserialization" do
+                it "should store timestamp.zone as #{ zone }" do
+                  event['timestamp']['zone'].should == zone
+                end
 
-      it "timestamp should return 10 AM ET" do
-        eastern_event.timestamp.should == Time.parse(ten_am_eastern)
+                it "should store timestamp.offset as #{ (zone.to_i * 60 * 60) }" do
+                  event['timestamp']['offset'].should == (zone.to_i * 60 * 60)
+                end
+
+              end
+
+              describe "on deserialization" do
+
+                it "timestamp should return #{ time }" do
+                  event.timestamp.should == time
+                end
+
+              end
+
+            end
+
+          end
+
+        end
+
       end
 
     end

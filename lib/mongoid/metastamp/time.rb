@@ -35,7 +35,8 @@ module Mongoid #:nodoc:
           when ::String
             ::DateTime.parse(value)
           when ::Time
-            ::DateTime.new(value.year, value.month, value.day, value.hour, value.min, value.sec)
+            offset = ActiveSupport::TimeZone.seconds_to_utc_offset(value.utc_offset)
+            ::DateTime.new(value.year, value.month, value.day, value.hour, value.min, value.sec, offset)
           when ::Date
             ::DateTime.new(value.year, value.month, value.day)
           when ::Array
