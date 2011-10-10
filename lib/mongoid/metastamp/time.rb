@@ -8,7 +8,7 @@ module Mongoid #:nodoc:
 
       def deserialize(object)
         return nil if object.blank?
-        super(object[:in_zone])
+        super(object['in_zone'])
       end
 
       def serialize(object)
@@ -23,7 +23,7 @@ module Mongoid #:nodoc:
           hour:         normalized_time.hour,
           min:          normalized_time.min,
           sec:          normalized_time.sec
-        }
+        }.stringify_keys
       end
 
     protected
