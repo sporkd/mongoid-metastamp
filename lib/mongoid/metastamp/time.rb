@@ -8,40 +8,39 @@ module Mongoid #:nodoc:
 
       def deserialize(object)
         return nil if object.blank?
-        super(object['in_zone'])
+        super(object['time'])
       end
 
       def serialize(object)
         time = super(object)
-        normalized_time = normalize_time(object)
+        date_time = parse_datetime(object)
         { 
-          in_zone:      time,
-          normalized:   normalized_time,
-          year:         normalized_time.year,
-          month:        normalized_time.month,
-          day:          normalized_time.day,
-          hour:         normalized_time.hour,
-          min:          normalized_time.min,
-          sec:          normalized_time.sec
+          time:         time,
+          normalized:   date_time.to_s.to_time,
+          year:         date_time.year,
+          month:        date_time.month,
+          day:          date_time.day,
+          hour:         date_time.hour,
+          min:          date_time.min,
+          sec:          date_time.sec
         }.stringify_keys
       end
 
     protected
 
-      def normalize_time(object)
-        case object
+      def parse_datetime(value)
+        case value
           when ::String
-            time = ::Time.parse(object)
-          when ::DateTime
-            time = ::Time.new(object.year, object.month, object.day, object.hour, object.min, object.sec)
+            ::DateTime.parse(value)
+          when ::Time
+            ::DateTime.new(value.year, value.month, value.day, value.hour, value.min, value.sec)
           when ::Date
-            time = ::Time.new(object.year, object.month, object.day)
+            ::DateTime.new(value.year, value.month, value.day)
           when ::Array
-            time = ::Time.new(*object)
+            ::DateTime.new(*value)
           else
-            time = object
+            value
         end
-        ::Time.parse(time.iso8601.sub(/-(\d\d:\d\d)$/, "-00:00"))
       end
     end
   end
