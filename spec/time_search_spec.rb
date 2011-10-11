@@ -112,7 +112,7 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.year" do
 
-      it "should not return any events events for 2010" do
+      it "should not return any events for 2010" do
         Event.where("timestamp.year" => 2010).count.should == 0
       end
 
@@ -124,7 +124,7 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.month" do
 
-      it "should not return any events events for anything before October" do
+      it "should not return any events when before October" do
         Event.where("timestamp.month" => {'$lt' => 10}).count.should == 0
       end
 
@@ -136,7 +136,7 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.day" do
 
-      it "should not return any events events for anything after the 5th" do
+      it "should not return any events when after the 5th" do
         Event.where("timestamp.day" => {'$gt' => 5}).count.should == 0
       end
 
@@ -148,11 +148,11 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.hour" do
 
-      it "should not return any events for anthing before 10" do
+      it "should not return any events when before 10 AM" do
         Event.where("timestamp.hour" => {'$lt' => 10}).count.should == 0
       end
 
-      it "should return both events for 10" do
+      it "should return both events for 10 AM" do
         Event.where("timestamp.hour" => 10).count.should == 2
       end
 
@@ -160,8 +160,8 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.min" do
 
-      it "should not return any events for anything greater than 0" do
-        Event.where("timestamp.min" => {'$gt' => 0}).count.should == 0
+      it "should not return any events when after 1 minute" do
+        Event.where("timestamp.min" => {'$gte' => 1}).count.should == 0
       end
 
       it "should return both events for 0" do
@@ -172,8 +172,8 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.sec" do
 
-      it "should not return any events for anything greater than 0" do
-        Event.where("timestamp.sec" => {'$gt' => 0}).count.should == 0
+      it "should not return any events when after 1 second" do
+        Event.where("timestamp.sec" => {'$gte' => 1}).count.should == 0
       end
 
       it "should return both events for 0" do
@@ -184,11 +184,11 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.zone" do
 
-      it "should return the eastern event when searching -04:00" do
+      it "should return only the eastern event when searching -04:00" do
         Event.where("timestamp.zone" => "-04:00").to_a.should == [@eastern_event]
       end
 
-      it "should return the pacific event when searching -07:00" do
+      it "should return only the pacific event when searching -07:00" do
         Event.where("timestamp.zone" => "-07:00").to_a.should == [@pacific_event]
       end
 
