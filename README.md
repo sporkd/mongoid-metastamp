@@ -1,27 +1,38 @@
 Mongoid Metastamp
 =========================
 
-Provides Mongoid with enhanced meta-timestamps which allow querying by day, month, year, min, sec, or even by local vs. universal timezone.
+Provides Mongoid with enhanced meta-timestamps that store additional parsed time metadata,
+allowing more powerful querying on specific time fields and across normalized time zones.
+
 
 What It Does
 =========================
 (Or why would I want to use this?)
 
-Storing simple timestamps is all well and good if your queries are very simple.
-But sometimes you might want to search for all events that occurred for a given range or across multiple locations and zones.
+Storing simple timestamps is all well and good if your queries are simple or involve just one timezone.
+But sometimes you need to search across multiple locations while
+ignoring timezone offsets. For example:
 
-Well you could query for all possible events and then run a timezone conversion on each result in hopes of narrowing it down, but this is hard work.
-Using mongoid-metastamp gives you a custom Time field does these conversions beforehand, and then stores the metadata in a MongoDB friendly way for easy querying.
+* Find all flights that depart from any airport between 1:00pm and 2:00pm local time.
+* Return all employees that clocked in after 8:00am at either the Denver or San Diego location.
 
-Here are some basic examples:
+Other times you want to be able to query very specific parts of the
+date/time that typically can't be accessed without parsing it:
 
-* Find all employees that clocked in after 8:00 AM at either the Denver or San Diego location
-* Find everyone who visited one of our nationwide stores on a Monday in January
-* Find all transactions that occured on a weekday between 11 AM and 2 PM, across timezones
+* Find all transactions that occured on weekday afternoons in 2011.
+* Return all users that signed up in January for the last 3 years.
+
+Typically to do these things, you'd need to add a bunch of of complex time ranges to your query.
+Or you might query the entire range and loop through each result, running additional tests on the parsed time.
+
+Using mongoid-metastamp gives you a custom time field type that is normalized beforehand,
+and then stored in a MongoDB friendly way for easy querying.
 
 
 Installation
 =========================
+
+In your Gemfile
 
 ```
 gem 'mongoid-metastamp'
@@ -34,10 +45,10 @@ $ bundle install
 Usage
 =========================
 
-For the most part, metastamp Time fields can be used just like regular Time fields:
+For the most part, `Mongoid::Metastamp::Time` fields can be used just like regular `Time` fields:
 
 ```ruby
-class Party
+class MyEvent
   include Mongoid::Document
   field :starts_at, type: Mongoid::Metastamp::Time
   field :ends_at,   type: Mongoid::Metastamp::Time
@@ -45,20 +56,17 @@ end
 ```
 
 ```ruby
-Party.create(starts_at: Time.now, ends_at: Time.now + 1.day)
-party = Party.where(:starts_at.lt => Time.now, :ends_at.gt => Time.now).one
-party.starts_at # => (sometime today)
-party.ends_at   # => (sometime tomorrow)
+MyEvent.create(starts_at: Time.now, ends_at: Time.now + 1.day)
+
+event = MyEvent.where(:starts_at.lt => Time.now, :ends_at.gt => Time.now).one
+event.starts_at  # => Time
+event.ends_at    # => Time
 ```
 
 Data Stored
 =========================
 
-When you define a metastamp field called `timestamp`, the following meta fields also get stored insides its hash:
-
-```ruby
-field :timestamp, type: Mongoid::Metastamp::Time
-```
+When you define a `Mongoid::Metastamp::Time` field, the following meta fields also get stored inside its hash:
 
 * `time` (Date)
 * `normalized` (Date)
@@ -72,40 +80,78 @@ field :timestamp, type: Mongoid::Metastamp::Time
 * `zone` (String)
 * `offset` (Int)
 
-The `time` field stores whatever you set `timestamp` to.
-It will also be the value retunred when you access `timestamp`.
 
-You can access the raw metadata fields like this:
+The `time` meta-field stores whatever you assign the field to.
+It will also be the value deserialized when you access the field.
 
 ```ruby
-event = Event.new(timestamp: "2011-10-05 10:00:00 -0700")
-event['timestamp']['month']  # => October
+field :timestamp, type: Mongoid::Metastamp::Time
+```
+
+For a field called `timestamp`, you can access the raw metadata fields like this:
+
+```ruby
+event = MyEvent.new(starts_at: "2011-10-05 10:00:00 -0700")
+event['timestamp']['month']  # => 10
 event['timestamp']['day']    # => 5
 event['timestamp']['year']   # => 2011
+event['timestamp']['zone']   # => "-07:00"
 ```
+
+The `normalized` meta-field is the time normalized to a UTC value.
+This is useful when you want to query ignoring local offsets.
+
+```ruby
+eastern_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0400")
+pacific_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0700")
+
+eastern_event['timestamp']['time']        # => 2011-10-05 14:00:00 UTC
+eastern_event['timestamp']['normalized']  # => 2011-10-05 10:00:00 UTC
+
+pacific_event['timestamp']['time']        # => 2011-10-05 17:00:00 UTC
+pacific_event['timestamp']['normalized']  # => 2011-10-05 10:00:00 UTC
+```
+
 
 Querying
 =========================
 
-Because `time` is the default, it can be queried as `timestamp` or `timestamp.time`:
+Since the `time` meta-field is the default, it can be queried as either `timestamp` or `timestamp.time`:
 
 ```ruby
-good_old_times = Event.where(:timestamp.lt => 20.years.ago)
+good_old_days = Day.where(:timestamp.lt => 20.years.ago)
 ```
 
-Or...
+or...
 
 ```ruby
-good_old_times = Event.where("timestamp.time" => { '$lt' => 20.years.ago })
+good_old_days = Day.where("timestamp.time" => { '$lt' => 20.years.ago })
 ```
 
-All the other fields need to be queried with the full syntax:
+The other meta-fields need to be queried with the full syntax:
 
 ```ruby
 hump_days = Day.where("timestamp.wday" => 5)
+=> Only Wednesdays
 
-after_noon_delights = Delight.where("timestamp.hour" => { '$gt' => 12 })
+after_noon_delights = Delight.where("timestamp.hour" => { '$gte' => 12, '$lte' => 15 })
+=> Only between 12pm and 3pm
 ```
+See [search specs](https://github.com/sporkd/mongoid-metastamp/blob/master/spec/time_search_spec.rb)
+for more complete examples.
 
-(More to come)
+
+Todo
+======
+
+* Add custom finders and scopes
+* Auto migrate existing date/time fields
+* Additional types
+
+
+License
+========
+
+Copyright (c) 2011 Peter Gumeson.
+See [LICENSE](https://github.com/sporkd/mongoid-metastamp/blob/master/LICENSE) for full license.
 
