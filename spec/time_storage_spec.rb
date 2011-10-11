@@ -4,7 +4,7 @@ require "spec_helper"
 
 describe "Mongoid::Metastamp::Time" do
   
-  context "storing nil" do
+  context "when storing nil" do
 
     context "on initialization" do
 

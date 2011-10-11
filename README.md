@@ -145,7 +145,7 @@ Todo
 ======
 
 * Add custom finders and scopes
-* Auto migrate existing date/time fields
+* Migration tasks for existing time fields
 * Additional types
 
 
