@@ -21,6 +21,7 @@ module Mongoid #:nodoc:
           year:         date_time.year,
           month:        date_time.month,
           day:          date_time.day,
+          wday:         date_time.wday,
           hour:         date_time.hour,
           min:          date_time.min,
           sec:          date_time.sec,

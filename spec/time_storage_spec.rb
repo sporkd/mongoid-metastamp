@@ -101,6 +101,10 @@ describe "Mongoid::Metastamp::Time" do
                   event['timestamp']['day'].should == 31
                 end
 
+                it "should store timestamp.wday as 6 (Saturday)" do
+                  event['timestamp']['wday'].should == 6
+                end
+
                 it "should store timestamp.hour as #{ hour }" do
                   event['timestamp']['hour'].should == hour
                 end
@@ -163,6 +167,10 @@ describe "Mongoid::Metastamp::Time" do
 
                 it "should store timestamp.day as 31" do
                   event['timestamp']['day'].should == 31
+                end
+
+                it "should store timestamp.wday as 6 (Saturday)" do
+                  event['timestamp']['wday'].should == 6
                 end
 
                 it "should store timestamp.hour as #{ hour }" do

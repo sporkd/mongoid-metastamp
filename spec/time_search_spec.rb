@@ -146,6 +146,18 @@ describe "Mongoid::Metastamp::Time" do
 
     end
 
+    describe "searching by timestamp.wday" do
+
+      it "should not return any events when thurs - tues" do
+        Event.where("timestamp.wday" => {'$gte' => 4, '$lte' => 2}).count.should == 0
+      end
+
+      it "should return both events for wed" do
+        Event.where("timestamp.wday" => 3).count.should == 2
+      end
+
+    end
+
     describe "searching by timestamp.hour" do
 
       it "should not return any events when before 10 AM" do
