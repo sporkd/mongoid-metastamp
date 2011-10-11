@@ -32,28 +32,33 @@ describe "Mongoid::Metastamp::Time" do
     end
 
     context "after Mongoid::Metastamp upgrade" do
-      
+
       before :each do
+        instance
         Legacy.field(:timestamp, type: Mongoid::Metastamp::Time)
       end
 
+      let :legacy do
+        Legacy.find(instance.id)
+      end
+
       it "should still be able to read legacy timestamps" do
-        instance.timestamp.should == Time.parse(two_pm_pacific)
+        legacy.timestamp.should == Time.parse(two_pm_pacific)
       end
       
       describe "updating timestamp with the same time" do
 
         before :each do
-          instance.update_attribute(:timestamp, two_pm_pacific)
+          legacy.update_attribute(:timestamp, two_pm_pacific)
         end
 
         it "should now store timestamp as a Hash" do
-          instance['timestamp'].class.should == Hash
-          instance['timestamp']['time'].should == Time.parse(two_pm_pacific)
+          legacy['timestamp'].class.should == Hash
+          legacy['timestamp']['time'].should == Time.parse(two_pm_pacific)
         end
 
         it "should still be compatible with the legacy timestamp" do
-          instance.timestamp.should == Time.parse(two_pm_pacific)
+          legacy.timestamp.should == Time.parse(two_pm_pacific)
         end
 
       end

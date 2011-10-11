@@ -8,6 +8,7 @@ module Mongoid #:nodoc:
 
       def deserialize(object)
         return nil if object.blank?
+        return super(object) if object.instance_of?(::Time)
         super(object['time'])
       end
 
