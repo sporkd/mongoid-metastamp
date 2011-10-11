@@ -129,6 +129,10 @@ describe "Mongoid::Metastamp::Time" do
                   event.timestamp.should == time
                 end
 
+                it "timestamp should return time in UTC" do
+                  event.timestamp.zone.should == "UTC"
+                end
+
               end
 
             end
@@ -187,6 +191,10 @@ describe "Mongoid::Metastamp::Time" do
 
                 it "timestamp should return #{ time }" do
                   event.timestamp.should == time
+                end
+
+                it "timestamp should return time in UTC" do
+                  event.timestamp.zone.should == "UTC"
                 end
 
               end
