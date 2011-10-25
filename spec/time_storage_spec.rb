@@ -58,7 +58,7 @@ describe "Mongoid::Metastamp::Time" do
 
   [0, 12, 23].each do |hour|
 
-    ["+00:00", "-04:00", "-07:00", "+13:00"].each do |zone|
+    ["+00:00", "-04:00", "-08:00", "+13:00"].each do |zone|
 
       time_utc = Time.new(2011, 12, 31, hour, 0, 0, '-00:00')
       time = Time.new(2011, 12, 31, hour, 0, 0, zone)

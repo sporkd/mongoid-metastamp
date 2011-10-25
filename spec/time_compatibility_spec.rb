@@ -5,7 +5,7 @@ require "spec_helper"
 describe "Mongoid::Metastamp::Time" do
 
   let :two_pm_pacific do
-    "2011-10-05T14:00:00-07:00"
+    "2011-10-05T14:00:00-08:00"
   end
 
   describe "compatibility with Time class" do

@@ -13,7 +13,7 @@ describe "Mongoid::Metastamp::Time" do
   end
 
   let :ten_am_pacific do
-    "2011-10-05T10:00:00-07:00"
+    "2011-10-05T10:00:00-08:00"
   end
 
   context "given a 10:00 eastern and a 10:00 pacific timestamp" do
@@ -200,8 +200,8 @@ describe "Mongoid::Metastamp::Time" do
         Event.where("timestamp.zone" => "-04:00").to_a.should == [@eastern_event]
       end
 
-      it "should return only the pacific event when searching -07:00" do
-        Event.where("timestamp.zone" => "-07:00").to_a.should == [@pacific_event]
+      it "should return only the pacific event when searching -08:00" do
+        Event.where("timestamp.zone" => "-08:00").to_a.should == [@pacific_event]
       end
 
     end

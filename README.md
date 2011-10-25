@@ -17,15 +17,15 @@ This is common when you have more than one location. For example:
 * Return all employees that clocked in later than 8:00am local time to any of our nationwide locations.
 
 Other times you want to be able to query very specific parts of the
-date/time that typically can't be accessed without parsing it:
+date or time that typically can't be accessed without parsing it:
 
 * Find all transactions that occurred on weekdays after 12pm in 2010.
-* Return all users that signed up the first week of January over the last 3 years.
+* Return all users that signed up the first week of every month over the last 3 years.
 
 Typically to do these things, you'd need to add a bunch of of complex time ranges to your query.
 Or you might query the entire range and loop through each result, running additional tests on the parsed time.
 
-Using mongoid-metastamp gives you a custom time field type that is normalized beforehand,
+Using mongoid-metastamp gives you a custom time field type that is normalized and parsed beforehand,
 and then stored in a MongoDB friendly way for easy querying.
 
 
@@ -72,7 +72,8 @@ event.ends_at
 Data Stored
 =========================
 
-When you define a `Mongoid::Metastamp::Time` field, the following meta fields get stored inside its hash:
+However, behind the scenes the following meta fields will transparently be stored inside
+your Mongoid::Metastamp::Time field:
 
 * `time` (Date)
 * `normalized` (Date)
@@ -99,15 +100,15 @@ end
 You can access the raw metadata fields like this:
 
 ```ruby
-event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0700")
+event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0800")
 
 event['timestamp']
-# => {"time"=>2011-10-05 17:00:00 UTC, "normalized"=>2011-10-05 10:00:00 UTC, "year"=>2011, "month"=>10, "day"=>5, "wday"=>3, "hour"=>10, "min"=>0, "sec"=>0, "zone"=>"-07:00", "offset"=>-25200}
+# => {"time"=>2011-10-05 17:00:00 UTC, "normalized"=>2011-10-05 10:00:00 UTC, "year"=>2011, "month"=>10, "day"=>5, "wday"=>3, "hour"=>10, "min"=>0, "sec"=>0, "zone"=>"-08:00", "offset"=>-25200}
 
 event['timestamp']['month']  # => 10
 event['timestamp']['day']    # => 5
 event['timestamp']['year']   # => 2011
-event['timestamp']['zone']   # => "-07:00"
+event['timestamp']['zone']   # => "-08:00"
 ```
 
 The `time` meta-field is special and stores whatever you assign the field to.
@@ -129,7 +130,7 @@ This is useful when you want to query ignoring local offsets.
 
 ```ruby
 eastern_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0400")
-pacific_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0700")
+pacific_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0800")
 
 eastern_event['timestamp']['time']        # => 2011-10-05 14:00:00 UTC
 eastern_event['timestamp']['normalized']  # => 2011-10-05 10:00:00 UTC
@@ -142,25 +143,25 @@ pacific_event['timestamp']['normalized']  # => 2011-10-05 10:00:00 UTC
 Querying
 =========================
 
-Since the `time` meta-field is the default, it can be queried as either `timestamp` or `timestamp.time`:
+Since the `time` meta-field is the default, it can be queried as `timestamp`:
 
 ```ruby
 good_old_days = Day.where(:timestamp.lt => 20.years.ago)
 ```
 
-or...
+or as `timestamp.time`:
 
 ```ruby
 good_old_days = Day.where("timestamp.time" => { '$lt' => 20.years.ago })
 ```
 
-The other meta-fields need to be queried using the full syntax:
+For now, the other meta-fields need to be queried using the longer syntax:
 
 ```ruby
 hump_days = Day.where("timestamp.wday" => 5)
 # => Only Wednesdays
 
-after_noon_delights = Delight.where("timestamp.hour" => { '$gte' => 12, '$lt' => 15 })
+afternoon_delights = Delight.where("timestamp.hour" => { '$gte' => 12, '$lt' => 15 })
 # => Only between 12pm and 3pm
 ```
 See the [search specs](https://github.com/sporkd/mongoid-metastamp/blob/master/spec/time_search_spec.rb)
@@ -171,7 +172,7 @@ Todo
 ======
 
 * Add custom finder methods and scopes
-* Migration tasks for existing time fields
+* Migration task to convert existing time fields
 * Additional field types
 
 
