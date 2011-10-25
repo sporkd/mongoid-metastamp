@@ -129,7 +129,7 @@ The `normalized` meta-field is the time normalized to a UTC value.
 This is useful when you want to query ignoring local offsets.
 
 ```ruby
-eastern_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0400")
+eastern_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0500")
 pacific_event = MyEvent.new(timestamp: "2011-10-05 10:00:00 -0800")
 
 eastern_event['timestamp']['time']        # => 2011-10-05 14:00:00 UTC
@@ -143,7 +143,7 @@ pacific_event['timestamp']['normalized']  # => 2011-10-05 10:00:00 UTC
 Querying
 =========================
 
-Since the `time` meta-field is the default, it can be queried as `timestamp`:
+Since the `time` meta-field is the default, it can be queried as just `timestamp`:
 
 ```ruby
 good_old_days = Day.where(:timestamp.lt => 20.years.ago)
@@ -155,7 +155,7 @@ or as `timestamp.time`:
 good_old_days = Day.where("timestamp.time" => { '$lt' => 20.years.ago })
 ```
 
-For now, the other meta-fields need to be queried using the longer syntax:
+For now, the other meta-fields need to be queried using the full syntax:
 
 ```ruby
 hump_days = Day.where("timestamp.wday" => 5)
