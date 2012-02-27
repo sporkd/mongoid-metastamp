@@ -4,7 +4,7 @@ module Mongoid #:nodoc:
   module Metastamp
     class Time
       include Mongoid::Fields::Serializable
-      include Mongoid::Fields::Serializable::Timekeeping
+      include Mongoid::Fields::Internal::Timekeeping
 
       def deserialize(object)
         return nil if object.blank?
@@ -18,7 +18,7 @@ module Mongoid #:nodoc:
         date_time = parse_datetime(object)
         { 
           time:         time,
-          normalized:   date_time.to_s.to_time,
+          normalized:   normalized_time(date_time),
           year:         date_time.year,
           month:        date_time.month,
           day:          date_time.day,
@@ -47,6 +47,12 @@ module Mongoid #:nodoc:
           else
             value
         end
+      end
+
+      def normalized_time(date_time)
+        d = ::Date._parse(date_time.to_s, false).values_at(:year, :mon, :mday, :hour, :min, :sec, :sec_fraction).map { |arg| arg || 0 }
+        d[6] *= 1000000
+        ::Time.utc_time(*d)
       end
     end
   end

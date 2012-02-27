@@ -2,8 +2,6 @@ require "rubygems"
 require "bundler/setup"
 
 require "mongoid"
-require "mongoid/core_ext"
-
 require "mongoid/metastamp"
 require "mongoid/metastamp/time"
 
