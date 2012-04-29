@@ -1,11 +1,14 @@
 require "rubygems"
 require "bundler/setup"
+require "zonebie"
 
 require "mongoid"
 require "mongoid/metastamp"
 require "mongoid/metastamp/time"
 
 require "rspec"
+
+Zonebie.set_random_timezone
 
 Mongoid.configure do |config|
   config.master = Mongo::Connection.new.db("mongoid_metastamp_test")
