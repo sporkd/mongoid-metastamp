@@ -4,45 +4,57 @@ require "spec_helper"
 
 describe "Mongoid::Metastamp::Time" do
 
-  let :ten_am_utc do
-    "2011-10-05T10:00:00-00:00"
+  let :eastern_zone do
+    "Eastern Time (US & Canada)"
   end
 
-  let :ten_am_eastern do
-    "2011-10-05T10:00:00-05:00"
+  let :pacific_zone do
+    "Pacific Time (US & Canada)"
   end
 
-  let :ten_am_pacific do
-    "2011-10-05T10:00:00-08:00"
+  let :utc_zone do
+    "UTC"
+  end
+
+  let :wed_oct_5_ten_am do
+    "2011-10-05 10:00:00"
   end
 
   context "given a 10:00 eastern and a 10:00 pacific timestamp" do
 
     before :each do
-      @eastern_event = Event.create(timestamp: ten_am_eastern)
-      @pacific_event = Event.create(timestamp: ten_am_pacific)
+      Time.zone = eastern_zone
+      @ten_am_eastern = Time.zone.parse(wed_oct_5_ten_am)
+      @eastern_event = Event.create(timestamp: @ten_am_eastern)
+
+      Time.zone = pacific_zone
+      @ten_am_pacific = Time.zone.parse(wed_oct_5_ten_am)
+      @pacific_event = Event.create(timestamp: @ten_am_pacific)
+
+      Time.zone = utc_zone
+      @ten_am_utc = Time.zone.parse(wed_oct_5_ten_am)
     end
 
     describe "searching by timestamp" do
 
       it "should not return any events when searching a 10:00 UTC range" do
         Event.where(
-          :timestamp.gt => Time.parse(ten_am_utc) - 1.second,
-          :timestamp.lt => Time.parse(ten_am_utc) + 1.second
+          :timestamp.gt => @ten_am_utc - 1.second,
+          :timestamp.lt => @ten_am_utc + 1.second
         ).to_a.should == []
       end
           
       it "should only return the ET event when searching a 10:00 ET range" do
         Event.where(
-          :timestamp.gt =>  Time.parse(ten_am_eastern) - 1.second,
-          :timestamp.lt => Time.parse(ten_am_eastern) + 1.second
+          :timestamp.gt =>  @ten_am_eastern - 1.second,
+          :timestamp.lt => @ten_am_eastern + 1.second
         ).to_a.should == [@eastern_event]
       end
     
       it "should only return the PT event when searching a 10:00 PT range" do
         Event.where(
-          :timestamp.gt => Time.parse(ten_am_pacific) - 1.second,
-          :timestamp.lt => Time.parse(ten_am_pacific) + 1.second
+          :timestamp.gt => @ten_am_pacific - 1.second,
+          :timestamp.lt => @ten_am_pacific + 1.second
         ).to_a.should == [@pacific_event]
       end
     
@@ -53,8 +65,8 @@ describe "Mongoid::Metastamp::Time" do
       it "should not return any events when searching a 10:00 UTC range" do
         Event.where(
           "timestamp.time" => {
-            '$gt' => Time.parse(ten_am_utc) - 1.second,
-            '$lt' => Time.parse(ten_am_utc) + 1.second
+            '$gt' => @ten_am_utc - 1.second,
+            '$lt' => @ten_am_utc + 1.second
           }
         ).to_a.should == []
       end
@@ -62,8 +74,8 @@ describe "Mongoid::Metastamp::Time" do
       it "should only return the ET event when searching a 10:00 ET range" do
         Event.where(
           "timestamp.time" => {
-            '$gt' => Time.parse(ten_am_eastern) - 1.second,
-            '$lt' => Time.parse(ten_am_eastern) + 1.second
+            '$gt' => @ten_am_eastern - 1.second,
+            '$lt' => @ten_am_eastern + 1.second
           }
         ).to_a.should == [@eastern_event]
       end
@@ -71,8 +83,8 @@ describe "Mongoid::Metastamp::Time" do
       it "should only return the PT event when searching a 10:00 PT range" do
         Event.where(
           "timestamp.time" => { 
-            '$gt' => Time.parse(ten_am_pacific) - 1.second,
-            '$lt' => Time.parse(ten_am_pacific) + 1.second
+            '$gt' => @ten_am_pacific - 1.second,
+            '$lt' => @ten_am_pacific + 1.second
           }
         ).to_a.should == [@pacific_event]
       end
@@ -84,8 +96,8 @@ describe "Mongoid::Metastamp::Time" do
       it "should return both events when searching a 10:00 UTC range" do
         Event.where(
           "timestamp.normalized" => {
-            '$gt' => Time.parse(ten_am_utc) - 1.second,
-            '$lt' => Time.parse(ten_am_utc) + 1.second
+            '$gt' => @ten_am_utc - 1.second,
+            '$lt' => @ten_am_utc + 1.second
           }
         ).to_a.should == [@eastern_event, @pacific_event]
       end
@@ -93,8 +105,8 @@ describe "Mongoid::Metastamp::Time" do
       it "should not return any events when searching a 10:00 ET range" do
         Event.where(
           "timestamp.normalized" => {
-            '$gt' => Time.parse(ten_am_eastern) - 1.second,
-            '$lt' => Time.parse(ten_am_eastern) + 1.second
+            '$gt' => @ten_am_eastern - 1.second,
+            '$lt' => @ten_am_eastern + 1.second
           }
         ).to_a.should == []
       end
@@ -102,8 +114,8 @@ describe "Mongoid::Metastamp::Time" do
       it "should not return any events when searching a 10:00 PT range" do
         Event.where(
           "timestamp.normalized" => {
-            '$gt' => Time.parse(ten_am_pacific) - 1.second,
-            '$lt' => Time.parse(ten_am_pacific) + 1.second
+            '$gt' => @ten_am_pacific - 1.second,
+            '$lt' => @ten_am_pacific + 1.second
           }
         ).to_a.should == []
       end
@@ -196,12 +208,16 @@ describe "Mongoid::Metastamp::Time" do
 
     describe "searching by timestamp.zone" do
 
-      it "should return only the eastern event when searching -05:00" do
-        Event.where("timestamp.zone" => "-05:00").to_a.should == [@eastern_event]
+      it "should return no events when searching UTC" do
+        Event.where("timestamp.zone" => utc_zone).to_a.should == []
       end
 
-      it "should return only the pacific event when searching -08:00" do
-        Event.where("timestamp.zone" => "-08:00").to_a.should == [@pacific_event]
+      it "should return only the eastern event when searching Eastern Time (US & Canada)" do
+        Event.where("timestamp.zone" => eastern_zone).to_a.should == [@eastern_event]
+      end
+
+      it "should return only the pacific event when searching Pacific Time (US & Canada)" do
+        Event.where("timestamp.zone" => pacific_zone).to_a.should == [@pacific_event]
       end
 
     end

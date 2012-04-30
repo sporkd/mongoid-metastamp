@@ -19,8 +19,11 @@ end
 Dir["#{File.dirname(__FILE__)}/models/*.rb"].each { |f| require f }
 
 RSpec.configure do |c|
-  c.before(:each) do
-    ::Time.zone = "UTC"
+  c.before :all do
+    Zonebie.set_random_timezone
+  end
+
+  c.before :each do
     Mongoid.master.collections.select {|c| c.name !~ /system/ }.each(&:remove)
   end
 end

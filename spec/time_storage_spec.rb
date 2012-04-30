@@ -3,7 +3,7 @@
 require "spec_helper"
 
 describe "Mongoid::Metastamp::Time" do
-  
+
   context "when storing nil" do
 
     context "on initialization" do
@@ -58,25 +58,35 @@ describe "Mongoid::Metastamp::Time" do
 
   [0, 12, 23].each do |hour|
 
-    ["+00:00", "-05:00", "-08:00", "+13:00"].each do |zone|
+    [Date.today, (Date.today + 6.months)].each do |date|
 
-      time_utc = Time.new(2011, 12, 31, hour, 0, 0, '-00:00')
-      time = Time.new(2011, 12, 31, hour, 0, 0, zone)
-
-      context "storing time #{ time }" do
+      context "storing a timestamp created on #{ date } at #{ hour }:00" do
         
         {
-          "String"      => time.to_s,
-          "iso8601"     => time.iso8601,
-          "Time"        => time
-        }.each do |format, timestamp|
+          "Time"        => :to_time,
+          "String"      => :to_s,
+          "iso8601"     => :iso8601,
+          "DateTime"    => :to_datetime
+        }.each do |format, method|
 
-          context "formatted as #{ format } (#{ timestamp })" do
+          context "formatted as a #{ format }" do
+
+            let! :time do
+              Time.zone.parse("#{date.to_s} #{hour}:00:00")
+            end
+
+            let! :normalized do
+              Time.parse("#{date.to_s} #{hour}:00:00 -0000")
+            end
+
+            let! :timestamp do
+              method ? time.send(method) : time
+            end
 
             context "on initialization" do
 
               let :event do
-                Event.new(timestamp: timestamp)
+                Event.new(timestamp: timestamp, time_zone: Time.zone)
               end
 
               describe "on serialization" do
@@ -86,23 +96,23 @@ describe "Mongoid::Metastamp::Time" do
                 end
 
                 it "should store timestamp.normalized" do
-                  event['timestamp']['normalized'].should == time_utc
+                  event['timestamp']['normalized'].should == normalized
                 end
 
-                it "should store timestamp.year as 2011" do
-                  event['timestamp']['year'].should == 2011
+                it "should store timestamp.year as #{ date.year }" do
+                  event['timestamp']['year'].should == date.year
                 end
 
-                it "should store timestamp.month as 12" do
-                  event['timestamp']['month'].should == 12
+                it "should store timestamp.month as #{ date.month }" do
+                  event['timestamp']['month'].should == date.month
                 end
 
-                it "should store timestamp.day as 31" do
-                  event['timestamp']['day'].should == 31
+                it "should store timestamp.day as #{ date.day }" do
+                  event['timestamp']['day'].should == date.day
                 end
 
-                it "should store timestamp.wday as 6 (Saturday)" do
-                  event['timestamp']['wday'].should == 6
+                it "should store timestamp.wday as #{ date.wday }" do
+                  event['timestamp']['wday'].should == date.wday
                 end
 
                 it "should store timestamp.hour as #{ hour }" do
@@ -117,24 +127,36 @@ describe "Mongoid::Metastamp::Time" do
                   event['timestamp']['sec'].should == 0
                 end
 
-                it "should store timestamp.zone as #{ zone }" do
-                  event['timestamp']['zone'].should == zone
+                it "should store timestamp.zone at Time.zone.name" do
+                  event['timestamp']['zone'].should == Time.zone.name
                 end
 
-                it "should store timestamp.offset as #{ (zone.to_i * 60 * 60) }" do
-                  event['timestamp']['offset'].should == (zone.to_i * 60 * 60)
+                it "should store timestamp.offset" do
+                  event['timestamp']['offset'].should == time.utc_offset
                 end
 
               end
 
               describe "on deserialization" do
 
-                it "timestamp should return #{ time }" do
+                it "timestamp should return the original time" do
                   event.timestamp.should == time
                 end
 
-                it "timestamp should return time in UTC" do
-                  event.timestamp.zone.should == "UTC"
+                it "timestamp should return time in local time" do
+                  event.timestamp.utc_offset.should == time.utc_offset
+                end
+
+              end
+
+              describe "copying a timestamp" do
+
+                let :event2 do
+                  Event.new(timestamp: event.timestamp)
+                end
+
+                it "both timestamps should be the same" do
+                  event2['timestamp'].should == event['timestamp']
                 end
 
               end
@@ -154,23 +176,23 @@ describe "Mongoid::Metastamp::Time" do
                 end
 
                 it "should store timestamp.normalized" do
-                  event['timestamp']['normalized'].should == time_utc
+                  event['timestamp']['normalized'].should == normalized
                 end
 
-                it "should store timestamp.year as 2011" do
-                  event['timestamp']['year'].should == 2011
+                it "should store timestamp.year as #{ date.year }" do
+                  event['timestamp']['year'].should == date.year
                 end
 
-                it "should store timestamp.month as 12" do
-                  event['timestamp']['month'].should == 12
+                it "should store timestamp.month as #{ date.month }" do
+                  event['timestamp']['month'].should == date.month
                 end
 
-                it "should store timestamp.day as 31" do
-                  event['timestamp']['day'].should == 31
+                it "should store timestamp.day as #{ date.day }" do
+                  event['timestamp']['day'].should == date.day
                 end
 
-                it "should store timestamp.wday as 6 (Saturday)" do
-                  event['timestamp']['wday'].should == 6
+                it "should store timestamp.wday as #{ date.wday }" do
+                  event['timestamp']['wday'].should == date.wday
                 end
 
                 it "should store timestamp.hour as #{ hour }" do
@@ -185,24 +207,36 @@ describe "Mongoid::Metastamp::Time" do
                   event['timestamp']['sec'].should == 0
                 end
 
-                it "should store timestamp.zone as #{ zone }" do
-                  event['timestamp']['zone'].should == zone
+                it "should store timestamp.zone at Time.zone.name" do
+                  event['timestamp']['zone'].should == Time.zone.name
                 end
 
-                it "should store timestamp.offset as #{ (zone.to_i * 60 * 60) }" do
-                  event['timestamp']['offset'].should == (zone.to_i * 60 * 60)
+                it "should store timestamp.offset" do
+                  event['timestamp']['offset'].should == time.utc_offset
                 end
 
               end
 
               describe "on deserialization" do
 
-                it "timestamp should return #{ time }" do
+                it "timestamp should return the original time" do
                   event.timestamp.should == time
                 end
 
-                it "timestamp should return time in UTC" do
-                  event.timestamp.zone.should == "UTC"
+                it "timestamp should return time in local time" do
+                  event.timestamp.utc_offset.should == time.utc_offset
+                end
+
+              end
+
+              describe "copying a timestamp" do
+
+                let :event2 do
+                  Event.create(timestamp: event.timestamp)
+                end
+
+                it "both timestamps should be the same" do
+                  event2['timestamp'].should == event['timestamp']
                 end
 
               end
