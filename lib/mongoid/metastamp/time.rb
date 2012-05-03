@@ -9,11 +9,10 @@ module Mongoid #:nodoc:
       def deserialize(object)
         return nil if object.blank?
         return super(object) if object.instance_of?(::Time)
-        #time = object['time'].getlocal unless Mongoid::Config.use_utc?
-        #zone = ActiveSupport::TimeZone[object['zone']]
-        #zone = ActiveSupport::TimeZone[object['offset']] if zone.nil?
-        #time.in_time_zone(zone)
-        super(object['time'])
+        time = object['time'].getlocal unless Mongoid::Config.use_utc?
+        zone = ActiveSupport::TimeZone[object['zone']]
+        zone = ActiveSupport::TimeZone[object['offset']] if zone.nil?
+        time.in_time_zone(zone)
       end
 
       def serialize(object)
@@ -54,7 +53,7 @@ module Mongoid #:nodoc:
       end
 
       def normalized_time(time)
-        ::Time.parse("#{ time.strftime("%F %T") } -0000")
+        ::Time.parse("#{ time.strftime("%F %T") } -0000").utc
       end
     end
   end

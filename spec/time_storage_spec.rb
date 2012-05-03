@@ -4,6 +4,10 @@ require "spec_helper"
 
 describe "Mongoid::Metastamp::Time" do
 
+  before :each do
+    Zonebie.set_random_timezone
+  end
+
   context "when storing nil" do
 
     context "on initialization" do
@@ -86,7 +90,7 @@ describe "Mongoid::Metastamp::Time" do
             context "on initialization" do
 
               let :event do
-                Event.new(timestamp: timestamp, time_zone: Time.zone)
+                Event.new(timestamp: timestamp)
               end
 
               describe "on serialization" do
@@ -140,10 +144,12 @@ describe "Mongoid::Metastamp::Time" do
               describe "on deserialization" do
 
                 it "timestamp should return the original time" do
+                  # Time.zone = "UTC"
                   event.timestamp.should == time
                 end
 
                 it "timestamp should return time in local time" do
+                  # Time.zone = "UTC"
                   event.timestamp.utc_offset.should == time.utc_offset
                 end
 
@@ -220,10 +226,12 @@ describe "Mongoid::Metastamp::Time" do
               describe "on deserialization" do
 
                 it "timestamp should return the original time" do
+                  # Time.zone = "UTC"
                   event.timestamp.should == time
                 end
 
                 it "timestamp should return time in local time" do
+                  # Time.zone = "UTC"
                   event.timestamp.utc_offset.should == time.utc_offset
                 end
 
